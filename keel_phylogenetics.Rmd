@@ -10,6 +10,7 @@ output: pdf_document
 library(googlesheets4)
 library(phytools)
 library(geiger)
+library(ape)
 ```
 # Read in data
 ```{r}
