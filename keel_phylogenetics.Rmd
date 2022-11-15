@@ -5,6 +5,17 @@ date: "11/15/2022"
 output: pdf_document
 ---
 
+# Load libraries
+```{r}
+library(googlesheets4)
+library(phytools)
+library(geiger)
+```
+# Read in data
+```{r}
+octophylo=read_sheet("https://docs.google.com/spreadsheets/d/1tZ75FgvcB8kx1hVY6yO6R9kojDWn7YfKMp_ck_oynxo/edit#gid=0")
+```
+
 ```{r}
 
 ```
