@@ -1,5 +1,5 @@
 ---
-title: "Burrows Bay Octopus Phylogeny"
+title: "Burrows Bay Octopus Phylogeny, edited for Cheyne's Thesis"
 author: "Kirt Onthank"
 date: "`r Sys.Date()`"
 output:
