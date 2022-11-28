@@ -306,7 +306,7 @@ coiii.accession=access$COIII
 coiii.accession[is.na(coiii.accession)]="DJ078208"
 coiii=read.GenBank(coiii.accession)
 coiii[names(coiii)=="DJ078208"]=as.DNAbin("-")
-names(coiii)=access$NA.
+names(coiii)=access$Species
 ```
 
 Building a base frequency table.
@@ -346,14 +346,22 @@ coiii.final=as.DNAbin(coiii.stag)
 write.nexus.data(coiii.final,"coiii.nxs",charsperline = 1000)
 ```
 
-Findig the place to start trimming to get rid of the trailing NAs
+Finding the place to start trimming to get rid of the trailing NAs
 ```{r}
-length(coiii.final$Octopus_vulgaris)+max(nchar(labels(coiii.final)))+10
+length(coiii.final$`Abdopus aculeatus`)+max(nchar(labels(coiii.final)))+10
 ```
 trimming off NA's
+
+Linux version:
 ```{bash}
-sed -i -E 's/(^.{711}).*/\1/g' coiii.nxs
+sed -i -E 's/(^.{757}).*/\1/g' coiii.nxs
 ```
+
+macOS version:
+```{bash}
+sed -E 's/(^.{757}).*/\1/g' coiii.nxs > coiii.nxs
+```
+
 
 Then, using sed to remove the last two lines of the file
 ```{bash}
