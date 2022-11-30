@@ -25,9 +25,8 @@ library(phangorn)
 library(rwty)
 library(stringi)
 library(Biostrings)
-library(dplyr)
+library(kableExtra)
 library(knitr)
-library(colorRamps)
 ```
 
 
@@ -58,6 +57,7 @@ access=read.csv("Octopus burrowing - data.csv",na.strings = "")
 colnames(access)=c("Species","burrow","keel","reference","COI","COIII","12S","16S","28S","Rhodopsin","Pax-6","cytb","notes")
 access=access[,1:13] #Dropping the junk columns
 access=access[,-c(4,13)] #Dropping notes and references columns
+mt=character() #making object for partition models
 ```
 
 
@@ -244,7 +244,6 @@ And then we order to results to find the best fit based on AICc.
 x12s.stems.mT=x12s.stems.mT[order(x12s.stems.mT$AICc),]
 x12s.stems.mT$Model=gsub("\\(\\d\\)","",x12s.stems.mT$Model)
 x12s.stems.mT$Model[1]
-mt=character()
 mt[1]=x12s.stems.mT$Model[1]
 ```
 
@@ -348,7 +347,7 @@ write.nexus.data(coiii.final,"coiii.nxs",charsperline = 1000)
 
 Finding the place to start trimming to get rid of the trailing NAs
 ```{r}
-length(coiii.final$`Abdopus aculeatus`)+max(nchar(labels(coiii.final)))+10
+length(coiii.final$Abdopus_aculeatus)+max(nchar(labels(coiii.final)))+10
 ```
 trimming off NA's
 
@@ -357,10 +356,6 @@ Linux version:
 sed -i -E 's/(^.{757}).*/\1/g' coiii.nxs
 ```
 
-macOS version:
-```{bash}
-sed -E 's/(^.{757}).*/\1/g' coiii.nxs > coiii.nxs
-```
 
 
 Then, using sed to remove the last two lines of the file
@@ -377,7 +372,7 @@ coiii.pd=as.phyDat(coiii.final[!is.na(access$COIII)])
 ```
 
 ```{r}
-coiii.length=length(coiii$Octopus_vulgaris)
+coiii.length=length(coiii$Abdopus_aculeatus)
 ```
 
 
