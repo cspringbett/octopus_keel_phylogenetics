@@ -85,7 +85,7 @@ First, I am constructing a tree using all three genes.
 ### Reading Sequences from GenBank and QC
 I use ape's read.GenBank command to go out and get the specific sequences. I tried to write all of this code so that it would still work if I didn't have complete coverage of all genes for all species (for instance, if I used all of the species in "Enteroctopodidae_and_Outgroup.csv" regardless if they had all three genes sequenced).  So here, if any of the taxa have an "NA" entered for 12s, I replace it with the accession # DJ078208.  This access number is for a single A. Why in the world did someone upload a single A nucleotide to GenBank and how did it get through GenBanks' QC?  I have no clue, but I am going to use it here to as a handy place-holder for missing data.
 ```{r}
-x12s.accession=access$X12s
+x12s.accession=access$x12s
 x12s.accession[is.na(x12s.accession)]="DJ078208"
 x12s=read.GenBank(x12s.accession)
 x12s[names(x12s)=="DJ078208"]=as.DNAbin("-")
@@ -378,6 +378,7 @@ coiii.length=length(coiii$Abdopus_aculeatus)
 
 COIII codon position 1
 ```{r}
+start=Sys.time()
 coiii.1.mT=modelTest(coiii.pd[,seq(from=1,to=coiii.length,by=3)],coiii.nj,
                         model=c("GTR","SYM","K80","HKY","F81","JC"),
                         multicore=T,mc.cores=4)
@@ -385,13 +386,16 @@ coiii.1.mT=coiii.1.mT[order(coiii.1.mT$AICc),]
 coiii.1.mT$Model=gsub("\\(\\d\\)","",coiii.1.mT$Model)
 coiii.1.mT$Model[1]
 mt[3]=coiii.1.mT$Model[1]
+save.image()
+Sys.time()-start
 ```
 
 COIII codon position 2
 ```{r}
 coiii.2.mT=modelTest(coiii.pd[,seq(from=2,to=coiii.length,by=3)],coiii.nj,
-                        model=c("GTR","SYM","K80","HKY","F81","JC"),
-                        multicore=T,mc.cores=4)
+                        model=c("GTR","SYM","K80","HKY","F81","JC")
+#                        ,multicore=T,mc.cores=2
+                     )
 coiii.2.mT$Model=gsub("\\(\\d\\)","",coiii.2.mT$Model)
 coiii.2.mT=coiii.2.mT[order(coiii.2.mT$AICc),]
 coiii.2.mT$Model[1]
