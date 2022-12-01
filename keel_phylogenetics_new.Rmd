@@ -297,6 +297,134 @@ sed -i "$(( $(wc -l <12s.nxs)-3+1 )),$ d" 12s.nxs
 ```
 
 
+
+## COI
+### Sequencing reading and QC
+Now, I am going to repeat the process I followed with 12s with the COIII sequences with only a few modifications. Therefore, I will annotate this less. 
+```{r}
+coi.accession=access$COI
+coi.accession[is.na(coi.accession)]="DJ078208"
+coi=read.GenBank(coi.accession)
+coi[names(coi)=="DJ078208"]=as.DNAbin("-")
+names(coi)=access$Species
+```
+
+Building a base frequency table.
+```{r}
+coi.bases=base.freq(coi[1])
+for (i in 2:length(coi)){
+  coi.bases=rbind(coi.bases,base.freq(coi[i]))  
+}
+rownames(coi.bases)=names(coi)
+```
+
+
+finding any possible sequences that need to be reverse complemented
+```{r}
+plot(coi.bases[,1]/coi.bases[,4],ylim=c(0,2.8))
+plot(coi.bases[,1]/coi.bases[,4],coi.bases[,2]/coi.bases[,3],ylim=c(0,2.8),xlim=c(0,3))
+abline(v=1,col="red")
+abline(h=1,col="red")
+```
+
+These look pretty good overall, so I don't need to do much with them.
+
+
+### Sequence alignment
+Alignment is a lot more straight forward for these sequence since they are protein coding and not structural.  Here, I can just use the AlignSeqs function from DECIPHER package.
+```{r message=FALSE, warning=FALSE, results='hide'}
+coi2=DNAbin_to_DNAstringset(coi)
+coi.align=AlignSeqs(coi2)
+coi.stag=StaggerAlignment(coi.align)
+coi.final=as.DNAbin(coi.stag)
+```
+
+### Creating nexus file
+```{r}
+coi.final=as.DNAbin(coi.stag)
+write.nexus.data(coi.final,"coi.nxs",charsperline = 1000)
+```
+
+Finding the place to start trimming to get rid of the trailing NAs
+```{r}
+length(coi.final$Abdopus_aculeatus)+max(nchar(labels(coi.final)))+10
+```
+
+trimming off NA's
+
+Linux version:
+```{bash}
+sed -i -E 's/(^.{1620}).*/\1/g' coi.nxs
+```
+
+
+
+Then, using sed to remove the last two lines of the file
+```{bash}
+sed -i "$(( $(wc -l <coi.nxs)-3+1 )),$ d" coi.nxs
+```
+
+### Model Test
+In this case, I want to partition the dataset into each of the three codon positions. That will be done in the MrBayes command block and not here. However, I do need to run model test for each codon position independently. That is what I am doing here. 
+```{r}
+coi.dist=dist.dna(coi.final[!is.na(access$COI)])
+coi.nj=NJ(coi.dist)
+coi.pd=as.phyDat(coi.final[!is.na(access$COI)])
+```
+
+```{r}
+coi.length=length(coi$Abdopus_aculeatus)
+```
+
+
+COI codon position 1
+```{r}
+start=Sys.time()
+coi.1.mT=modelTest(coi.pd[,seq(from=1,to=coi.length,by=3)],coi.nj,
+                        model=c("GTR","SYM","K80","HKY","F81","JC")
+#                        ,multicore=T,mc.cores=4
+                     )
+coi.1.mT=coi.1.mT[order(coi.1.mT$AICc),]
+coi.1.mT$Model=gsub("\\(\\d\\)","",coi.1.mT$Model)
+coi.1.mT$Model[1]
+mt[3]=coi.1.mT$Model[1]
+save.image()
+Sys.time()-start
+```
+
+COI codon position 2
+```{r}
+start=Sys.time()
+coi.2.mT=modelTest(coi.pd[,seq(from=2,to=coi.length,by=3)],coi.nj,
+                        model=c("GTR","SYM","K80","HKY","F81","JC")
+#                        ,multicore=T,mc.cores=2
+                     )
+coi.2.mT$Model=gsub("\\(\\d\\)","",coi.2.mT$Model)
+coi.2.mT=coi.2.mT[order(coi.2.mT$AICc),]
+coi.2.mT$Model[1]
+mt[4]=coi.2.mT$Model[1]
+save.image()
+Sys.time()-start
+#test
+```
+
+COI codon position 3
+```{r}
+start=Sys.time()
+coi.3.mT=modelTest(coi.pd[,seq(from=3,to=coi.length,by=3)],coi.nj,
+                        model=c("GTR","SYM","K80","HKY","F81","JC")
+   #                     ,multicore=T,mc.cores=4
+                     )
+coi.3.mT=coi.3.mT[order(coi.3.mT$AICc),]
+coi.3.mT$Model=gsub("\\(\\d\\)","",coi.3.mT$Model)
+coi.3.mT$Model[1]
+mt[5]=coi.3.mT$Model[1]
+save.image()
+Sys.time()-start
+```
+
+
+
 ## COIII
 ### Sequencing reading and QC
 Now, I am going to repeat the process I followed with 12s with the COIII sequences with only a few modifications. Therefore, I will annotate this less. 
@@ -380,8 +508,9 @@ COIII codon position 1
 ```{r}
 start=Sys.time()
 coiii.1.mT=modelTest(coiii.pd[,seq(from=1,to=coiii.length,by=3)],coiii.nj,
-                        model=c("GTR","SYM","K80","HKY","F81","JC"),
-                        multicore=T,mc.cores=4)
+                        model=c("GTR","SYM","K80","HKY","F81","JC")
+#                        ,multicore=T,mc.cores=4
+                     )
 coiii.1.mT=coiii.1.mT[order(coiii.1.mT$AICc),]
 coiii.1.mT$Model=gsub("\\(\\d\\)","",coiii.1.mT$Model)
 coiii.1.mT$Model[1]
@@ -392,6 +521,7 @@ Sys.time()-start
 
 COIII codon position 2
 ```{r}
+start=Sys.time()
 coiii.2.mT=modelTest(coiii.pd[,seq(from=2,to=coiii.length,by=3)],coiii.nj,
                         model=c("GTR","SYM","K80","HKY","F81","JC")
 #                        ,multicore=T,mc.cores=2
@@ -400,18 +530,24 @@ coiii.2.mT$Model=gsub("\\(\\d\\)","",coiii.2.mT$Model)
 coiii.2.mT=coiii.2.mT[order(coiii.2.mT$AICc),]
 coiii.2.mT$Model[1]
 mt[4]=coiii.2.mT$Model[1]
+save.image()
+Sys.time()-start
 #test
 ```
 
 COIII codon position 3
 ```{r}
+start=Sys.time()
 coiii.3.mT=modelTest(coiii.pd[,seq(from=3,to=coiii.length,by=3)],coiii.nj,
-                        model=c("GTR","SYM","K80","HKY","F81","JC"),
-                        multicore=T,mc.cores=4)
+                        model=c("GTR","SYM","K80","HKY","F81","JC")
+   #                     ,multicore=T,mc.cores=4
+                     )
 coiii.3.mT=coiii.3.mT[order(coiii.3.mT$AICc),]
 coiii.3.mT$Model=gsub("\\(\\d\\)","",coiii.3.mT$Model)
 coiii.3.mT$Model[1]
 mt[5]=coiii.3.mT$Model[1]
+save.image()
+Sys.time()-start
 ```
 
 ## CytB 
