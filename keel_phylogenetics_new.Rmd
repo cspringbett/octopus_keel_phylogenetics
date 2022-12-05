@@ -171,7 +171,7 @@ x16s.1.mT=modelTest(x16s.pd[,seq(from=1,to=x16s.length,by=3)],x16s.nj,
 x16s.1.mT=x16s.1.mT[order(x16s.1.mT$AICc),]
 x16s.1.mT$Model=gsub("\\(\\d\\)","",x16s.1.mT$Model)
 x16s.1.mT$Model[1]
-mt[3]=x16s.1.mT$Model[1]
+mt[1]=x16s.1.mT$Model[1]
 save.image()
 Sys.time()-start
 ```
@@ -265,7 +265,7 @@ coi.1.mT=modelTest(coi.pd[,seq(from=1,to=coi.length,by=3)],coi.nj,
 coi.1.mT=coi.1.mT[order(coi.1.mT$AICc),]
 coi.1.mT$Model=gsub("\\(\\d\\)","",coi.1.mT$Model)
 coi.1.mT$Model[1]
-mt[3]=coi.1.mT$Model[1]
+mt[2]=coi.1.mT$Model[1]
 save.image()
 Sys.time()-start
 ```
@@ -280,7 +280,7 @@ coi.2.mT=modelTest(coi.pd[,seq(from=2,to=coi.length,by=3)],coi.nj,
 coi.2.mT$Model=gsub("\\(\\d\\)","",coi.2.mT$Model)
 coi.2.mT=coi.2.mT[order(coi.2.mT$AICc),]
 coi.2.mT$Model[1]
-mt[4]=coi.2.mT$Model[1]
+mt[3]=coi.2.mT$Model[1]
 save.image()
 Sys.time()-start
 #test
@@ -296,7 +296,7 @@ coi.3.mT=modelTest(coi.pd[,seq(from=3,to=coi.length,by=3)],coi.nj,
 coi.3.mT=coi.3.mT[order(coi.3.mT$AICc),]
 coi.3.mT$Model=gsub("\\(\\d\\)","",coi.3.mT$Model)
 coi.3.mT$Model[1]
-mt[5]=coi.3.mT$Model[1]
+mt[4]=coi.3.mT$Model[1]
 save.image()
 Sys.time()-start
 ```
@@ -392,7 +392,7 @@ coiii.1.mT=modelTest(coiii.pd[,seq(from=1,to=coiii.length,by=3)],coiii.nj,
 coiii.1.mT=coiii.1.mT[order(coiii.1.mT$AICc),]
 coiii.1.mT$Model=gsub("\\(\\d\\)","",coiii.1.mT$Model)
 coiii.1.mT$Model[1]
-mt[3]=coiii.1.mT$Model[1]
+mt[5]=coiii.1.mT$Model[1]
 save.image()
 Sys.time()-start
 ```
@@ -407,7 +407,7 @@ coiii.2.mT=modelTest(coiii.pd[,seq(from=2,to=coiii.length,by=3)],coiii.nj,
 coiii.2.mT$Model=gsub("\\(\\d\\)","",coiii.2.mT$Model)
 coiii.2.mT=coiii.2.mT[order(coiii.2.mT$AICc),]
 coiii.2.mT$Model[1]
-mt[4]=coiii.2.mT$Model[1]
+mt[6]=coiii.2.mT$Model[1]
 save.image()
 Sys.time()-start
 #test
@@ -423,7 +423,7 @@ coiii.3.mT=modelTest(coiii.pd[,seq(from=3,to=coiii.length,by=3)],coiii.nj,
 coiii.3.mT=coiii.3.mT[order(coiii.3.mT$AICc),]
 coiii.3.mT$Model=gsub("\\(\\d\\)","",coiii.3.mT$Model)
 coiii.3.mT$Model[1]
-mt[5]=coiii.3.mT$Model[1]
+mt[7]=coiii.3.mT$Model[1]
 save.image()
 Sys.time()-start
 ```
@@ -450,8 +450,8 @@ data.frame(partition=c("16s stems",
                        "COXI pos 1",
                        "COXI pos 2",
                        "COXI pos 3"),
-           length=c(length(stems.12s),
-                    length(loops.12s),
+           length=c(length(stems.16s),
+                    length(loops.16s),
                     floor(length(coiii.align$Octopus_vulgaris)/3+.67),
                     floor(length(coiii.align$Octopus_vulgaris)/3+.34),
                     floor(length(coiii.align$Octopus_vulgaris)/3),
