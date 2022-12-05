@@ -407,7 +407,8 @@ coiii.2.mT=modelTest(coiii.pd[,seq(from=2,to=coiii.length,by=3)],coiii.nj,
 coiii.2.mT$Model=gsub("\\(\\d\\)","",coiii.2.mT$Model)
 coiii.2.mT=coiii.2.mT[order(coiii.2.mT$AICc),]
 coiii.2.mT$Model[1]
-mt[6]=coiii.2.mT$Model[1]
+#mt[6]=coiii.2.mT$Model[1]
+mt[6]="HKY+G+I"
 save.image()
 Sys.time()-start
 #test
@@ -423,7 +424,8 @@ coiii.3.mT=modelTest(coiii.pd[,seq(from=3,to=coiii.length,by=3)],coiii.nj,
 coiii.3.mT=coiii.3.mT[order(coiii.3.mT$AICc),]
 coiii.3.mT$Model=gsub("\\(\\d\\)","",coiii.3.mT$Model)
 coiii.3.mT$Model[1]
-mt[7]=coiii.3.mT$Model[1]
+#mt[7]=coiii.3.mT$Model[1]
+mt[7]="HKY+G"
 save.image()
 Sys.time()-start
 ```
@@ -436,30 +438,29 @@ Nst=rep(6,length(mt))
 Nst[grepl("K80|HKY",mt)]=2
 Nst[grepl("JC|F81",mt)]=1
 
-rate=rep("",8)
+rate=rep("",7)
 rate[grepl("\\+I",mt)]="propinv"
 rate[grepl("\\+G",mt)]="gamma"
 rate[grepl("\\+G\\+I",mt)]="invgamma"
 
 models.selected=
-data.frame(partition=c("16s stems",
-                       "16s loops",
-                       "COXIII pos 1",
-                       "COXIII pos 2",
-                       "COXIII pos 3",
+data.frame(partition=c("16s",
                        "COXI pos 1",
                        "COXI pos 2",
-                       "COXI pos 3"),
-           length=c(length(stems.16s),
-                    length(loops.16s),
-                    floor(length(coiii.align$Octopus_vulgaris)/3+.67),
-                    floor(length(coiii.align$Octopus_vulgaris)/3+.34),
-                    floor(length(coiii.align$Octopus_vulgaris)/3),
-                    floor(length(cytb.align$Octopus_vulgaris)/3+.67),
-                    floor(length(cytb.align$Octopus_vulgaris)/3+.34),
-                    floor(length(cytb.align$Octopus_vulgaris)/3)),
+                       "COXI pos 3",
+                       "COXIII pos 1",
+                       "COXIII pos 2",
+                       "COXIII pos 3"),
+           length=c(length(x16s.align),
+                    floor(length(coi.align$Abdopus_aculeatus)/3+.67),
+                    floor(length(coi.align$Abdopus_aculeatus)/3+.34),
+                    floor(length(coi.align$Abdopus_aculeatus)/3),
+                    floor(length(coiii.align$Abdopus_aculeatus)/3+.67),
+                    floor(length(coiii.align$Abdopus_aculeatus)/3+.34),
+                    floor(length(coiii.align$Abdopus_aculeatus)/3)),
+
            model=mt,
-           nucmodel=c("doublet",rep("4by4",7)),
+           nucmodel=c(rep("4by4",7)),
            Nst,
            rate)
 models.selected$model=gsub("\\+G","+Γ",models.selected$model)
@@ -470,28 +471,28 @@ kable(models.selected,align=c("l","c","c","c","c","r"))
 ## Combine nexus file production
 THe final step of the data preparation it so make a combine nexus file of all three genes and the MrBayes command block. 
 First, I am writing the 12s stem and loops positions out to a text file we can incorportate into the nexus file later.
-```{r}
+```{r}#
 write.table(t(stems.12s),"stems12s",sep=" ",row.names = F,col.names = F)
 write.table(t(loops.12s),"loops12s",sep=" ",row.names = F,col.names = F)
 ```
 
 Next, I find the length of the whole dataset
 ```{r}
-total.len=length(x12s.final[1,])+
-  length(coiii.final$Octopus_vulgaris)+
-  length(cytb.final$Octopus_vulgaris)
+total.len=length(x16s.final[1,])+
+  length(coi.final$Abdopus_aculeatus)+
+  length(coi.final$Abdopus_aculeatus)
 total.len
+```
+The start of the coi dataset:
+```{r}
+coi.start=length(x16s.final[1,])+1
+coi.start
 ```
 The start of the coiii dataset:
 ```{r}
-coiii.start=length(x12s.final[1,])+1
+coiii.start=length(x16s.final[1,])+
+  length(coiii.final$Abdopus_aculeatus+1
 coiii.start
-```
-The start of the cytb dataset:
-```{r}
-cytb.start=length(x12s.final[1,])+
-  length(coiii.final$Octopus_vulgaris)+1
-cytb.start
 ```
 
 ### Making the model selection block
