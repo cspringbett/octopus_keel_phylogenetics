@@ -220,7 +220,7 @@ coi.final=as.DNAbin(coi.stag)
 ### Creating nexus file
 ```{r}
 coi.final=as.DNAbin(coi.stag)
-write.nexus.data(coi.final,"coi.nxs",charsperline = 1000)
+write.nexus.data(coi.final,"coi.nxs",charsperline = 2000)
 ```
 
 Finding the place to start trimming to get rid of the trailing NAs
@@ -478,7 +478,7 @@ Next, I find the length of the whole dataset
 ```{r}
 total.len=length(x16s.final$Abdopus_aculeatus)+
   length(coi.final$Abdopus_aculeatus)+
-  length(coi.final$Abdopus_aculeatus)
+  length(coiii.final$Abdopus_aculeatus)
 total.len
 ```
 The start of the coi dataset:

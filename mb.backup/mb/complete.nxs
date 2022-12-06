@@ -415,7 +415,7 @@ begin mrbayes;
       partition by_gene = 7:16s,coi_pos1,coi_pos2,coi_pos3,coiii_pos1,coiii_pos2,coiii_pos3;
 	    set partition = by_gene;
 
-	    lset applyto=(1,2,3,4,6,7)   nucmodel=4by4;
+	    lset applyto=(1,2,3,4,5,6,7)   nucmodel=4by4;
 	    prset ratepr=variable;
 	    unlink statefreq=(all) revmat=(all) shape=(all) pinvar=(all);
       lset applyto=(1) nst=6;
