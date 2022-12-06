@@ -138,7 +138,7 @@ trimming off NA's
 
 Linux version:
 ```{bash}
-sed -i -E 's/(^.{1004}).*/\1/g' x16s.nxs
+sed -i -E 's/(^.{962}).*/\1/g' x16s.nxs
 ```
 
 
@@ -166,7 +166,7 @@ x16s codon
 start=Sys.time()
 x16s.1.mT=modelTest(x16s.pd[,seq(from=1,to=x16s.length,by=3)],x16s.nj,
                         model=c("GTR","SYM","K80","HKY","F81","JC")
-#                        ,multicore=T,mc.cores=4
+                        ,multicore=T,mc.cores=4
                      )
 x16s.1.mT=x16s.1.mT[order(x16s.1.mT$AICc),]
 x16s.1.mT$Model=gsub("\\(\\d\\)","",x16s.1.mT$Model)
@@ -229,10 +229,8 @@ length(coi.final$Abdopus_aculeatus)+max(nchar(labels(coi.final)))+10
 ```
 
 trimming off NA's
-
-Linux version:
 ```{bash}
-sed -i -E 's/(^.{1620}).*/\1/g' coi.nxs
+sed -i -E 's/(^.{1627}).*/\1/g' coi.nxs
 ```
 
 
@@ -260,7 +258,7 @@ COI codon position 1
 start=Sys.time()
 coi.1.mT=modelTest(coi.pd[,seq(from=1,to=coi.length,by=3)],coi.nj,
                         model=c("GTR","SYM","K80","HKY","F81","JC")
-#                        ,multicore=T,mc.cores=4
+                        ,multicore=T,mc.cores=4
                      )
 coi.1.mT=coi.1.mT[order(coi.1.mT$AICc),]
 coi.1.mT$Model=gsub("\\(\\d\\)","",coi.1.mT$Model)
@@ -275,7 +273,7 @@ COI codon position 2
 start=Sys.time()
 coi.2.mT=modelTest(coi.pd[,seq(from=2,to=coi.length,by=3)],coi.nj,
                         model=c("GTR","SYM","K80","HKY","F81","JC")
-#                        ,multicore=T,mc.cores=2
+                        ,multicore=T,mc.cores=2
                      )
 coi.2.mT$Model=gsub("\\(\\d\\)","",coi.2.mT$Model)
 coi.2.mT=coi.2.mT[order(coi.2.mT$AICc),]
@@ -291,7 +289,7 @@ COI codon position 3
 start=Sys.time()
 coi.3.mT=modelTest(coi.pd[,seq(from=3,to=coi.length,by=3)],coi.nj,
                         model=c("GTR","SYM","K80","HKY","F81","JC")
-   #                     ,multicore=T,mc.cores=4
+                        ,multicore=T,mc.cores=4
                      )
 coi.3.mT=coi.3.mT[order(coi.3.mT$AICc),]
 coi.3.mT$Model=gsub("\\(\\d\\)","",coi.3.mT$Model)
@@ -387,7 +385,7 @@ COIII codon position 1
 start=Sys.time()
 coiii.1.mT=modelTest(coiii.pd[,seq(from=1,to=coiii.length,by=3)],coiii.nj,
                         model=c("GTR","SYM","K80","HKY","F81","JC")
-#                        ,multicore=T,mc.cores=4
+                        ,multicore=T,mc.cores=4
                      )
 coiii.1.mT=coiii.1.mT[order(coiii.1.mT$AICc),]
 coiii.1.mT$Model=gsub("\\(\\d\\)","",coiii.1.mT$Model)
@@ -402,7 +400,7 @@ COIII codon position 2
 start=Sys.time()
 coiii.2.mT=modelTest(coiii.pd[,seq(from=2,to=coiii.length,by=3)],coiii.nj,
                         model=c("GTR","SYM","K80","HKY","F81","JC")
-#                        ,multicore=T,mc.cores=2
+                        ,multicore=T,mc.cores=2
                      )
 coiii.2.mT$Model=gsub("\\(\\d\\)","",coiii.2.mT$Model)
 coiii.2.mT=coiii.2.mT[order(coiii.2.mT$AICc),]
@@ -419,7 +417,7 @@ COIII codon position 3
 start=Sys.time()
 coiii.3.mT=modelTest(coiii.pd[,seq(from=3,to=coiii.length,by=3)],coiii.nj,
                         model=c("GTR","SYM","K80","HKY","F81","JC")
-   #                     ,multicore=T,mc.cores=4
+                        ,multicore=T,mc.cores=4
                      )
 coiii.3.mT=coiii.3.mT[order(coiii.3.mT$AICc),]
 coiii.3.mT$Model=gsub("\\(\\d\\)","",coiii.3.mT$Model)
@@ -478,20 +476,20 @@ write.table(t(loops.12s),"loops12s",sep=" ",row.names = F,col.names = F)
 
 Next, I find the length of the whole dataset
 ```{r}
-total.len=length(x16s.final[1,])+
+total.len=length(x16s.final$Abdopus_aculeatus)+
   length(coi.final$Abdopus_aculeatus)+
   length(coi.final$Abdopus_aculeatus)
 total.len
 ```
 The start of the coi dataset:
 ```{r}
-coi.start=length(x16s.final[1,])+1
+coi.start=length(x16s.final$Abdopus_aculeatus)+1
 coi.start
 ```
 The start of the coiii dataset:
 ```{r}
-coiii.start=length(x16s.final[1,])+
-  length(coiii.final$Abdopus_aculeatus+1
+coiii.start=length(x16s.final$Abdopus_aculeatus)+
+  length(coiii.final$Abdopus_aculeatus)+1
 coiii.start
 ```
 
@@ -510,18 +508,6 @@ models.muus=models.muus[-grep("NA",models.muus)]
 write.table(models.muus,"models_to_write",row.names = F,col.names = F,quote = F)
 ```
 
-### Making the 12s stem base pair block
-Now, I am also making a text file that has the 12s stem base pairs.
-```{r}
-write.table(t(c(as.vector(t(read.csv("basepairs_12s.csv",header=F)[1,])))),"basepairs",row.names = F,col.names = F)
-```
-
-And now doing a bit of reformatting of the text file using sed.
-```{bash}
-sed -i -E 's/([0-9]{2,4}) ([0-9]{2,4})/\1:\2/g' basepairs
-```
-
-
 
 ### Making blocks that require lengths
 Here I am making various blocks that require sequence lengths.  That includes the header of the nexux file and the portion of the MrBayes command block paritioning the dataset.
@@ -530,19 +516,24 @@ write.table(paste("  DIMENSIONS NTAX=",nrow(access)," NCHAR=",total.len,";",sep=
             row.names = F,col.names = F,quote = F)
 
 write.table(data.frame(models=c(
-            paste("      charset coiii_pos1 =  ",coiii.start," - ",cytb.start-1,"\\3;",sep=""),
-            paste("      charset coiii_pos2 =  ",coiii.start+1," - ",cytb.start-1,"\\3;",sep=""),
-            paste("      charset coiii_pos3 =  ",coiii.start+2," - ",cytb.start-1,"\\3;",sep="")
-            )),
-            "charset.coii",
+            paste("      charset 16s =  ",1," - ",coi.start-1,";",sep=""))),
+            "charset.16s",
             row.names = F,col.names = F,quote = F)
 
 write.table(data.frame(models=c(
-            paste("      charset cytb_pos1 =  ",cytb.start," - ",total.len,"\\3;",sep=""),
-            paste("      charset cytb_pos2 =  ",cytb.start+1," - ",total.len,"\\3;",sep=""),
-            paste("      charset cytb_pos3 =  ",cytb.start+2," - ",total.len,"\\3;",sep="")
+            paste("      charset coi_pos1 =  ",coi.start," - ",coiii.start-1,"\\3;",sep=""),
+            paste("      charset coi_pos2 =  ",coi.start+1," - ",coiii.start-1,"\\3;",sep=""),
+            paste("      charset coi_pos3 =  ",coi.start+2," - ",coiii.start-1,"\\3;",sep="")
             )),
-            "charset.cytb",
+            "charset.coi",
+            row.names = F,col.names = F,quote = F)
+
+write.table(data.frame(models=c(
+            paste("      charset coiii_pos1 =  ",coiii.start," - ",total.len,"\\3;",sep=""),
+            paste("      charset coiii_pos2 =  ",coiii.start+1," - ",total.len,"\\3;",sep=""),
+            paste("      charset coiii_pos3 =  ",coiii.start+2," - ",total.len,"\\3;",sep="")
+            )),
+            "charset.coiii",
             row.names = F,col.names = F,quote = F)
 
 ```
@@ -561,38 +552,32 @@ sed -n 1p dimensions >> complete.nxs
 echo "  FORMAT DATATYPE=DNA MISSING=? GAP=- INTERLEAVE=YES;
   MATRIX
   
-  [12s]" >> complete.nxs 
-sed -n 7,96p 12s.nxs >> complete.nxs
+  [16s]" >> complete.nxs 
+sed -n 7,136p x16s.nxs >> complete.nxs
+echo "
+   [COI]" >> complete.nxs
+sed -n 7,136p coi.nxs >> complete.nxs
 echo "
    [COIII]" >> complete.nxs
-sed -n 7,96p coiii.nxs >> complete.nxs
-echo "
-   [Cytb]" >> complete.nxs
-sed -n 7,98p cytb.nxs >> complete.nxs
+sed -n 7,136p coiii.nxs >> complete.nxs
 echo "  ;
 END;
 
-begin mrbayes;
-	[Define pairs for the doublet model]" >> complete.nxs
-cat basepairs | sed '1s/^/    pairs /' | sed -E 's/(:[0-9]{,4})/\1,/g' | sed -E 's/,$/;/g' | sed -r 's/(.{72,76} )/\1\n         /g' >> complete.nxs
+begin mrbayes;" >> complete.nxs
 echo " " >> complete.nxs
-cat stems12s | sed '1s/^/    	charset  12s-stems = /' | sed -E 's/$/;/g' | sed -r 's/(.{73,76} )/\1\n           /g' | sed '1s/^/\n/' >> complete.nxs
 
+sed -n 1,3p charset.16s >> complete.nxs
+sed -n 1,3p charset.coi >> complete.nxs
+sed -n 1,3p charset.coiii >> complete.nxs
 echo " " >> complete.nxs
-cat loops12s | sed '1s/^/    	charset  12s-loops = /' | sed -E 's/$/;/g' | sed -r 's/(.{73,76} )/\1\n           /g' | sed '1s/^/\n/' >> complete.nxs
-echo " " >> complete.nxs
-sed -n 1,3p charset.coii >> complete.nxs
-sed -n 1,3p charset.cytb >> complete.nxs
-echo " " >> complete.nxs
-echo "      partition by_gene = 8:12s-stems,12s-loops,coiii_pos1,coiii_pos2,coiii_pos3,cytb_pos1,cytb_pos2,cytb_pos3;" >> complete.nxs
+echo "      partition by_gene = 7:16s,coi_pos1,coi_pos2,coi_pos3,coiii_pos1,coiii_pos2,coiii_pos3;" >> complete.nxs
 echo "	    set partition = by_gene;
 " >> complete.nxs
-echo "	    constraint outg = Octopus_vulgaris Octopus_rubescens Octopus_bimaculoides Octopus_cyanea Amphioctopus_aegina Hapalochlaena_maculosa Abdopus_aculeatus Octopus_tetricus Octopus_berrima Macroctopus_maorum;
-	    prset topologypr = constraints (outg);
-	    outgroup Octopus_vulgaris;
-	    " >> complete.nxs
-echo "	    lset applyto=(1)   nucmodel=doublet;
-	    lset applyto=(2,3,4,6,7,8)   nucmodel=4by4;
+#echo "	    constraint outg = Octopus_vulgaris Octopus_rubescens Octopus_bimaculoides Octopus_cyanea Amphioctopus_aegina Hapalochlaena_maculosa Abdopus_aculeatus Octopus_tetricus Octopus_berrima Macroctopus_maorum;
+#	    prset topologypr = constraints (outg);
+#	    outgroup Octopus_vulgaris;
+#	    " >> complete.nxs
+echo "	    lset applyto=(1,2,3,4,5,6,7)   nucmodel=4by4;
 	    prset ratepr=variable;
 	    unlink statefreq=(all) revmat=(all) shape=(all) pinvar=(all);" >> complete.nxs
 
