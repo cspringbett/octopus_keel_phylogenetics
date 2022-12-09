@@ -82,7 +82,7 @@ kable(access.kable,row.names = F)
 First, I am constructing a tree using all three genes.  
 
 
-## 16s
+## cytb
 ### Sequencing reading and QC
 Now, I am going to repeat the process I followed with 12s with the COIII sequences with only a few modifications. Therefore, I will annotate this less. 
 ```{r}
