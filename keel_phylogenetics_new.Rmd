@@ -60,21 +60,19 @@ access=access[,-c(4,13)] #Dropping notes and references columns
 mt=character() #making object for partition models
 ```
 
+Only using COI, COIII and 16s.  So, I am paring the dataset down to only those genes and dropping any species for which we do not have at least one of those sequences.
 
-I am dropping all of the taxa for which sequences for all three genes (COIII, CytB and 12s) are available.  The one exception is Octopus rubescens, which some reviewers have asked me to include so that I could exclude both octopus species that occur in the same area.
 ```{r}
-#access=access[complete.cases(access)|access$NA.=="Octopus_rubescens",] 
-```
-
-Next, I am limiting the dataset to only a single set of sequences for each species or subspecies.
-```{r}
-#access=access[!grepl("_\\d",access$NA.),]
+access=access[,c(1:5,7)]
+access=access[!(is.na(access$COI)&is.na(access$COIII)&is.na(access$x16s)),]
+sum(access$burrow=="sub-surface burrowing",na.rm=T)
+sum(access$keel=="present",na.rm=T)
 ```
 
 Finally, I am making a table of the accession #s used in this analysis.
 ```{r}
 access.kable=access
-colnames(access.kable)=c("Species","burrow","keel","COI","COIII","x12s","x16s","x28s","Rhodopsin","Pax-6","cytb")
+colnames(access.kable)=c("Species","burrow","keel","COI","COIII","cytb")
 kable(access.kable,row.names = F)
 ```
 
@@ -106,7 +104,7 @@ rownames(x16s.bases)=names(x16s)
 finding any possible sequences that need to be reverse complemented
 ```{r}
 plot(x16s.bases[,1]/x16s.bases[,4],ylim=c(0,2.8))
-plot(x16s.bases[,1]/x16s.bases[,4],x16s.bases[,2]/coi.bases[,3],ylim=c(0,2.8),xlim=c(0,3))
+plot(x16s.bases[,1]/x16s.bases[,4],x16s.bases[,2]/x16s.bases[,3],ylim=c(0,2.8),xlim=c(0,3))
 abline(v=1,col="red")
 abline(h=1,col="red")
 ```
@@ -126,7 +124,7 @@ x16s.final=as.DNAbin(x16s.stag)
 ### Creating nexus file
 ```{r}
 x16s.final=as.DNAbin(x16s.stag)
-write.nexus.data(x16s.final,"x16s.nxs",charsperline = 1000)
+write.nexus.data(x16s.final,"x16s.nxs",charsperline = 2000)
 ```
 
 Finding the place to start trimming to get rid of the trailing NAs
@@ -138,7 +136,7 @@ trimming off NA's
 
 Linux version:
 ```{bash}
-sed -i -E 's/(^.{962}).*/\1/g' x16s.nxs
+sed -i -E 's/(^.{1050}).*/\1/g' x16s.nxs
 ```
 
 
@@ -230,7 +228,7 @@ length(coi.final$Abdopus_aculeatus)+max(nchar(labels(coi.final)))+10
 
 trimming off NA's
 ```{bash}
-sed -i -E 's/(^.{1627}).*/\1/g' coi.nxs
+sed -i -E 's/(^.{1620}).*/\1/g' coi.nxs
 ```
 
 
@@ -346,7 +344,7 @@ coiii.final=as.DNAbin(coiii.stag)
 ### Creating nexus file
 ```{r}
 coiii.final=as.DNAbin(coiii.stag)
-write.nexus.data(coiii.final,"coiii.nxs",charsperline = 1000)
+write.nexus.data(coiii.final,"coiii.nxs",charsperline = 2000)
 ```
 
 Finding the place to start trimming to get rid of the trailing NAs
@@ -553,13 +551,13 @@ echo "  FORMAT DATATYPE=DNA MISSING=? GAP=- INTERLEAVE=YES;
   MATRIX
   
   [16s]" >> complete.nxs 
-sed -n 7,136p x16s.nxs >> complete.nxs
+sed -n 7,116p x16s.nxs >> complete.nxs
 echo "
    [COI]" >> complete.nxs
-sed -n 7,136p coi.nxs >> complete.nxs
+sed -n 7,116p coi.nxs >> complete.nxs
 echo "
    [COIII]" >> complete.nxs
-sed -n 7,136p coiii.nxs >> complete.nxs
+sed -n 7,116p coiii.nxs >> complete.nxs
 echo "  ;
 END;
 
