@@ -27,6 +27,7 @@ library(stringi)
 library(Biostrings)
 library(kableExtra)
 library(knitr)
+library(phytools)
 ```
 
 
@@ -57,6 +58,8 @@ access=read.csv("Octopus burrowing - data.csv",na.strings = "")
 colnames(access)=c("Species","burrow","keel","reference","COI","COIII","x12s","x16s","x28s","Rhodopsin","Pax-6","cytb","notes")
 access=access[,1:13] #Dropping the junk columns
 access=access[,-c(4,13)] #Dropping notes and references columns
+access$Species=gsub("(\\w+) (\\w+)","\\1_\\2",access$Species)
+rownames(access)=access$Species
 mt=character() #making object for partition models
 ```
 
@@ -72,7 +75,7 @@ sum(access$keel=="present",na.rm=T)
 Finally, I am making a table of the accession #s used in this analysis.
 ```{r}
 access.kable=access
-colnames(access.kable)=c("Species","burrow","keel","COI","COIII","cytb")
+colnames(access.kable)=c("Species","burrow","keel","COI","COIII","16s")
 kable(access.kable,row.names = F)
 ```
 
@@ -617,230 +620,79 @@ Now I read the tree into R using the following code.
 mrbayes.tree=read.nexus("mb/complete.nxs.con.tre",tree.names=NULL)
 ```
 
-## Reading the 12s tree
-Now the same or the 12s tree
-```{bash eval=FALSE}
-cp ./mb_12s/12s_alone.nxs.con.tre ./mb_12s/12s_aloneBACKUP.nxs.con.tre
-sed -i '/Note: This tree contains information only on the topology/d' ./mb_12s/12s_alone.nxs.con.tre
-sed -i '/and branch lengths (median of the posterior probability density)/d' ./mb_12s/12s_alone.nxs.con.tre
-sed -i '/):/d' ./mb_12s/12s_alone.nxs.con.tre
-```
-
-
-Now I read the tree into R using the following code.
 ```{r}
-x12s.tree=read.nexus("mb_12s/12s_alone.nxs.con.tre",tree.names=NULL)
+mrbayes.tree$node.label
 ```
 
-
-## Reading the COIII tree
-Now the same or the coiii tree
-```{bash eval=FALSE}
-cp ./mb_coiii/coiii_alone.nxs.con.tre ./mb_coiii/coiii_aloneBACKUP.nxs.con.tre
-sed -i '/Note: This tree contains information only on the topology/d' ./mb_coiii/coiii_alone.nxs.con.tre
-sed -i '/and branch lengths (median of the posterior probability density)/d' ./mb_coiii/coiii_alone.nxs.con.tre
-sed -i '/):/d' ./mb_coiii/coiii_alone.nxs.con.tre
-```
-
-
-Now I read the tree into R using the following code.
 ```{r}
-coiii.tree=read.nexus("mb_coiii/coiii_alone.nxs.con.tre",tree.names=NULL)
+root.node=
+  getMRCA(mrbayes.tree,tip=c("Stauroteuthis_gilchristi","Cirrothauma_murrayi","Opisthoteuthis_depressa","Cirroctopus_glacialis"))
 ```
 
-
-## Reading the CytB tree
-Now the same for the cytb tree
-```{bash eval=FALSE}
-cp ./mb_cytb/cytb_alone.nxs.con.tre ./mb_cytb/cytb_aloneBACKUP.nxs.con.tre
-sed -i '/Note: This tree contains information only on the topology/d' ./mb_cytb/cytb_alone.nxs.con.tre
-sed -i '/and branch lengths (median of the posterior probability density)/d' ./mb_cytb/cytb_alone.nxs.con.tre
-sed -i '/):/d' ./mb_cytb/cytb_alone.nxs.con.tre
-```
-
-
-Now I read the tree into R using the following code.
 ```{r}
-cytb.tree=read.nexus("mb_cytb/cytb_alone.nxs.con.tre",tree.names=NULL)
+mrbayes.root=root(mrbayes.tree,node=root.node)
 ```
 
+
+# Pagel's Test
+
+```{r}
+unique(access$burrow)
+access$burrow[access$burrow=="sub-surface burrowing"]="burying"
+access$burrow[access$burrow=="unknown"]="non-burrowing"
+```
+
+```{r}
+unique(access$keel)
+access$keel[access$keel=="unknown"]="absent"
+```
+
+```{r}
+burrow=setNames(access$burrow,access$Species)
+keel=setNames(access$keel,access$Species)
+
+
+
+```
+
+```{r}
+fit.keeldep=fitPagel(mrbayes.root,burrow,keel,dep.var="y")
+fit.burydep=fitPagel(mrbayes.root,burrow,keel,dep.var="x")
+fit.interdep=fitPagel(mrbayes.root,burrow,keel,dep.var="xy")
+```
+
+```{r}
+as.numeric(fit.keeldep$dependent.AIC)
+as.numeric(fit.burydep$dependent.AIC)
+as.numeric(fit.interdep$dependent.AIC)
+as.numeric(fit.interdep$independent.AIC)
+
+```
+```{r}
+fit.interdep
+```
+
+
+```{r}
+svg("pagel_test.svg")
+
+plot(fit.interdep,cex=0.5,lwd.by.rate=T)
+dev.off()
+```
 
 
 # Plotting the tree
-Finally, I get to plot the trees produced by this analysis.  
 
 ```{r}
-tips.add=mrbayes.tree$tip.label
-tips.add[!grepl("leioderma",tips.add)]=""
-prefix="                                            "
-
-tips.add[tips.add=="Muusoctopus_leioderma_neotype"]=paste(prefix,"(neotype)")
-#tips.add[tips.add=="Muusoctopus_leioderma_burrows"]=paste(prefix,"(Burrows Bay)")
-tips.add[tips.add=="Muusoctopus_leioderma_casiz31213"]=paste(prefix,"(CASIZ 31213)")
-
-mrbayes.tree$tip.label[mrbayes.tree$tip.label=="Muusoctopus_leioderma_neotype"]="Muusoctopus leioderma"
-#mrbayes.tree$tip.label[mrbayes.tree$tip.label=="Muusoctopus_leioderma_burrows"]="Muusoctopus leioderma"
-mrbayes.tree$tip.label[mrbayes.tree$tip.label=="Muusoctopus_leioderma_casiz31213"]="Muusoctopus leioderma"
-```
-
-
-Making vectors for each tree that contain color coding by clade.
-```{r}
-colors.tip=rep("black",length(mrbayes.tree$tip.label))
-colors.tip[grep("Muusoctopus",mrbayes.tree$tip.label)]="red" #"#e06565ff"#"coral3"
-colors.tip[grep("leioderma|Burrows",mrbayes.tree$tip.label)]="blue" #"#2f2c86ff"#"darkcyan"
-colors.tip[grep("Enteroctopus|Sasakiopus|californicus",mrbayes.tree$tip.label)]="darkgreen" #"#289e31ff"#"darkolivegreen"
-
-
-cytb.colors.tip=rep("black",length(cytb.tree$tip.label))
-cytb.colors.tip[grep("Muusoctopus",cytb.tree$tip.label)]="red" #"#e06565ff"#"coral3"
-cytb.colors.tip[grep("leioderma|Burrows",cytb.tree$tip.label)]="blue" #"#2f2c86ff"#"darkcyan"
-cytb.colors.tip[grep("Enteroctopus|Sasakiopus|californicus",cytb.tree$tip.label)]="darkgreen" #"#289e31ff"#"darkolivegreen"
-
-coiii.colors.tip=rep("black",length(coiii.tree$tip.label))
-coiii.colors.tip[grep("Muusoctopus",coiii.tree$tip.label)]="red" #"#e06565ff"#"coral3"
-coiii.colors.tip[grep("leioderma|Burrows",coiii.tree$tip.label)]="blue" #"#2f2c86ff"#"darkcyan"
-coiii.colors.tip[grep("Enteroctopus|Sasakiopus|californicus",coiii.tree$tip.label)]="darkgreen" #"#289e31ff"#"darkolivegreen"
-
-x12s.colors.tip=rep("black",length(x12s.tree$tip.label))
-x12s.colors.tip[grep("Muusoctopus",x12s.tree$tip.label)]="red" #"#e06565ff"#"coral3"
-x12s.colors.tip[grep("leioderma|Burrows",x12s.tree$tip.label)]="blue" #"#2f2c86ff"#"darkcyan"
-x12s.colors.tip[grep("Enteroctopus|Sasakiopus|californicus",x12s.tree$tip.label)]="darkgreen" #"#289e31ff"#"darkolivegreen"
-
-```
-
-
-```{r}
-cytb.tree$tip.label=
-  gsub("_casiz31213|_neotype|_akambei|_longibrachus$","",cytb.tree$tip.label)
-cytb.tree$tip.label=
-  gsub("(\\w)\\w+_(\\w+)","\\1._\\2",cytb.tree$tip.label)
-cytb.tree$tip.label=
-  gsub("B._octopus","Burrows_Bay",cytb.tree$tip.label)
-
-
-coiii.tree$tip.label=
-  gsub("_casiz31213|_neotype|_akambei|_longibrachus$","",coiii.tree$tip.label)
-coiii.tree$tip.label=
-  gsub("(\\w)\\w+_(\\w+)","\\1._\\2",coiii.tree$tip.label)
-coiii.tree$tip.label=
-  gsub("B._octopus","Burrows_Bay",coiii.tree$tip.label)
-
-x12s.tree$tip.label=
-  gsub("_casiz31213|_neotype|_akambei|_longibrachus$","",x12s.tree$tip.label)
-x12s.tree$tip.label=
-  gsub("(\\w)\\w+_(\\w+)","\\1._\\2",x12s.tree$tip.label)
-x12s.tree$tip.label=
-  gsub("B._octopus","Burrows_Bay",x12s.tree$tip.label)
-
-
-```
-
-
-```{r}
-nodes95=rep(NA,length(mrbayes.tree$node.label))
-nodes100=rep(NA,length(mrbayes.tree$node.label))
-#nodes[mrbayes.tree$node.label>0]="♦"
-#nodes[mrbayes.tree$node.label>0.95]="■"
-nodes95[mrbayes.tree$node.label>0.95&mrbayes.tree$node.label<0.99999999]="┼"
-nodes100[mrbayes.tree$node.label>0.9999999]="●"
-
-
-#ramp=blue2green2red(1001)
-ramp=hcl.colors(1001,palette="viridis")
-node.colors=rep("black",length(mrbayes.tree$node.label))
-for (i in 2:length(node.colors)){
-  node.colors[i]=ramp[as.numeric(mrbayes.tree$node.label[i])*1000]
-}
-
-#nodes[mrbayes.tree$node.label==1]="†"
-#nodes[mrbayes.tree$node.label>=0.95&mrbayes.tree$node.label<1]="‡"
-#nodes[mrbayes.tree$node.label>=0.90&mrbayes.tree$node.label<0.95]="◊"
-```
-
-
-
-```{r, }
 svg(file="Figure2.svg",width=8,height=12)
-  par(fig=c(0,1,0.31,1))
-  par(mai=c(0,0,0,0))
-  
-  plot(mrbayes.tree,show.node.label=F,use.edge.length=T,align.tip.label=F,edge.width=2,
-     show.tip.label = T,x.lim=1.65,font=3,tip.color = colors.tip)
-  nodelabels(c(NA,rep("♦",length(mrbayes.tree$node.label)-1)), adj = c(0.5, 0.5), frame = "n",
-             cex = 1,font=2,col=node.colors)
-  nodelabels(c(NA,rep("◊",length(mrbayes.tree$node.label)-1)), adj = c(0.45, 0.53), frame = "n",
-             cex = 1.3,font=2,col="black")
-  nodelabels(nodes95, adj = c(0.46, 0.43), frame = "n",
-             cex = 0.5,font=2,col="black")
-  nodelabels(nodes100, adj = c(0.4, 0.43), frame = "n",
-             cex = 0.5,font=2,col="black")
-  tiplabels(tips.add,frame="n",adj=c(0,0.3),col="blue") #"#2f2c86ff")
-#  nodelabels(mrbayes.tree$node.label,bg=NULL,cex=0.3,frame="none",adj=c(1.1,-0.1))
-    
-    
-# Posterior Probability key
-  key.start=1.15
-  key.end=1.65
-  key.top=26
-  key.bottom=25.5
-  interp=round(seq(from=0,to=1,by=0.001),3)
-
-  key.points=seq(from=key.start,to=key.end,length.out=length(interp))
-  for(i in 1:length(key.points)){
-    lines(rep(key.points[i],2),c(key.bottom,key.top),col=ramp[i],lwd=2)
-  }
-  lines(c(key.start,key.end,key.end,key.start,key.start),
-        c(key.bottom,key.bottom,key.top,key.top,key.bottom),lwd=2)
-  text(key.points[c(1,length(interp)/2,length(interp))],rep(key.top+0.5,3)
-     ,c(0,0.5,1),cex=1,font=1)
-  lines(c(key.points[length(interp)/2],
-          key.points[length(interp)/2]),
-        c(key.top+0.2,key.top),lwd=2)
-  lines(c(key.points[1],key.points[1]),c(key.top+0.2,key.top),lwd=2)
-  lines(c(key.points[length(interp)],key.points[length(interp)]),c(key.top+0.2,key.top),lwd=2)
-  text((key.start+key.end)/2,key.top+1.1,'posterior probability')
-
-  points(key.end,key.bottom-0.5,pch="♦",col=ramp[999])
-  points(key.end+0.0002,key.bottom-0.525,pch="◊",cex=1.3)
-  points(key.end+0.0005,key.bottom-0.55,pch="┼",cex=0.5,font=2)
-  text(key.end,key.bottom-0.5,"0.95<pp<1.00:  ",adj=c(1,0.5))
-
-  points(key.end,24,pch="♦",col=ramp[1001])
-  points(key.end+0.0002,23.975,pch="◊",cex=1.3)
-  points(key.end+0.0006,23.98,pch="●",cex=0.5,font=2)
-  text(key.end,24,"pp=1.00:  ",adj=c(1,0.5))
-
-# Lines denoting clades of interest
-  lines(c(1.5,1.5),c(10,20),col="red",lwd=5)
-  text(1.54,15,"genus Muusoctopus",srt=-90,col="red",cex=1.5)
-
-  lines(c(1.6,1.6),c(6,22),col="darkgreen",lwd=5)
-  text(1.64,15,"family Enteroctopodidae",srt=-90,col="darkgreen",cex=1.5)
-
-#  lines(c(0,1),c(0,50))
-
-
-  par(fig=c(0,0.33,0,0.3),new=T)
-
-  plot(cytb.tree,show.node.label=F,use.edge.length=T,align.tip.label=F,edge.width=1.5,
-     show.tip.label = T,x.lim=0.8,font=3,tip.color = cytb.colors.tip,cex=0.7)
-  mtext("CytB",cex=1.5)
-
-  par(fig=c(0.33,0.66,0,0.3),new=T)
-
-  plot(coiii.tree,show.node.label=F,use.edge.length=T,align.tip.label=F,edge.width=1.5,
-     show.tip.label = T,x.lim=1.8,font=3,tip.color = coiii.colors.tip,cex=0.7)
-  mtext("COIII",cex=1.5)
-
-  par(fig=c(0.66,1,0,0.3),new=T)
-
-  plot(x12s.tree,show.node.label=F,use.edge.length=T,align.tip.label=F,edge.width=1.5,
-     show.tip.label = T,x.lim=0.9,font=3,tip.color = x12s.colors.tip,cex=0.7)
-  mtext("12s",cex=1.5)
-
+plot(mrbayes.root,show.node.label=F,use.edge.length=T,align.tip.label=F,edge.width=1,
+     show.tip.label = T,x.lim=1.65,font=3,cex=0.5)
+#nodelabels(1:108, adj = c(0.5, 0.5), frame = "n",
+#            cex = 0.5,font=2)
 dev.off()
 ```
+
+
 
 This is bash code to convert the svg to png that can be displayed in the RMarkdown pdf.
 ```{bash}
@@ -854,3 +706,79 @@ inkscape Figure2.svg -o Figure2.eps --export-ignore-filters --export-ps-level=3
 
 
 ![Phylogeny of family Enteroctopodidae](Figure2.png)
+
+
+```{r}
+mrbayes.root$tip.label %in% access$Species 
+
+cbind(access$Species,mrbayes.root$tip.label)
+```
+
+
+
+```{r}
+keel.col=rep("grey",110)
+keel.col[access$keel=="present"]="#0cceffff"
+bury.col=rep("grey",110)
+bury.col[access$burrow=="burying"]="#0cceffff"
+```
+
+
+# Plotting the
+```{r}
+par(mfrow=c(1,2))
+plot(mrbayes.root,show.tip.label=FALSE,no.margin=TRUE,use.edge.length=F)
+tiplabels("●",frame="n",cex=0.3,adj=c(0,0.3),col=keel.col)
+plot(mrbayes.root,show.tip.label=FALSE,no.margin=TRUE,direction="leftwards",use.edge.length=F)
+tiplabels("●",frame="n",cex=0.3,adj=c(0.7,0.3),col=bury.col)
+
+
+```
+
+```{r}
+f = function(n) c("grey", "red")
+g = function(n) c("red", "grey")
+```
+
+```{r}
+svg("character_phylo.svg",height=10,width=10)
+par(mar=c(0, 4, 4, 2))
+plot(mrbayes.root,show.tip.label=FALSE,use.edge.length=F)
+#tiplabels("●",frame="n",cex=0.5,adj=c(-1,0.25),col=keel.col)
+#tiplabels("●",frame="n",cex=0.5,adj=c(-3,0.25),col=bury.col)
+phydataplot(setNames(access$burrow,access$Species),mrbayes.root,style="mosaic",width=3,legend="none",funcol=g)
+phydataplot(setNames(access$keel,access$Species),mrbayes.root,style="mosaic",width=3,offset=5,legend="none",funcol = f)
+#ring(setNames(rep(1:110),access$Species),mrbayes.root,style="a")
+dev.off()
+```
+```{r}
+rainbow(2)
+```
+
+
+```{r}
+keel.col=rep("#ccf4ffff",110)
+keel.col[access$keel=="present"]="#0cceffff"
+bury.col=rep("#ffd6ccff",110)
+bury.col[access$burrow=="burying"]="#FF3D0C"
+
+svg("ring_phylo.svg",height=10,width=11)
+par(mar=c(2, 1, 2, 7)+5)
+par(xpd=T)
+plot(mrbayes.root, "f", show.tip.label = FALSE, x.l = c(-1, 1), y.l = c(-1, 1),use.edge.length=F,edge.width=0)
+ring(0.2, mrbayes.root, "r", col = keel.col, offset = 0)
+ring(0.2, mrbayes.root, "r", col = bury.col, offset = 0.22)
+par(new=T)
+plot(mrbayes.root, "f", x.l = c(-1, 1), y.l = c(-1, 1),use.edge.length=F,edge.width=2,cex=0.7)
+par(new=T)
+par(mar=c(0, 0, 0, 0))
+plot(c(0,1),c(0,1),axes=F, ylab="",xlab="",type="n")
+legend("bottomright",c("has keel","does not have keel","known to burrow or bury","not known to burrow or bury"),fill=c("#0cceffff","#ccf4ffff","#FF3D0C","#ffd6ccff"),border=c("#0cceffff","#ccf4ffff","#FF3D0C","#ffd6ccff"),bty="n",cex=1.3)
+dev.off()
+
+```
+This is bash code to convert the svg to png that can be displayed in the RMarkdown pdf.
+```{bash}
+cairosvg ring_phylo.svg -o ring_phylo.png -d 300
+```
+
